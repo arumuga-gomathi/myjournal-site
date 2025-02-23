@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A modern journal for capturing your thoughts and memories">
+    <title>My Journal - Capture Your Thoughts</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="theme-toggle">
+            <button id="darkModeToggle" aria-label="Toggle dark mode">🌙</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <h1>My Journal</h1>
+        <p>"Capture your thoughts, memories, and inspirations in one beautiful place."</p>
+        <div class="hero-stats">
+            <div class="stat">
+                <span id="entryCount">0</span>
+                <label>Entries</label>
+            </div>
+            <div class="stat">
+                <span id="wordCount">0</span>
+                <label>Words</label>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Entry Form -->
+        <section class="entry-form">
+            <h3>Create New Entry</h3>
+            <form id="journalForm">
+                <div class="form-group">
+                    <input type="text" id="entryTitle" placeholder="Give your entry a title..." required>
+                </div>
+                <div class="form-group">
+                    <textarea id="entryContent" placeholder="Write your thoughts..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <input type="date" id="entryDate" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" id="addEntry">
+                        <i class="fas fa-plus"></i> Add Entry
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Journal Section -->
+        <section class="journal-container">
+            <div class="section-header">
+                <h2>Your Entries</h2>
+                <div class="entry-filters">
+                    <select id="sortEntries">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                    </select>
+                    <input type="text" id="searchEntries" placeholder="Search entries...">
+                </div>
+            </div>
+            <div id="journal-entries">
+                <!-- JavaScript will dynamically add entries here -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 My Journal | Built with <i class="fas fa-heart"></i></p>
+            <div class="social-links">
+                <a href="#" aria-label="Share on Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Share on Facebook"><i class="fab fa-facebook"></i></a>
+                <a href="#" aria-label="Share on Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
