@@ -2,13 +2,15 @@ document.addEventListener("DOMContentLoaded", function() {
     // DOM Elements
     const darkModeToggle = document.getElementById("darkModeToggle");
     const body = document.body;
-    const journalForm = document.getElementById("journalForm");
-    const journalContainer = document.getElementById("journal-entries");
-    const searchInput = document.getElementById("searchEntries");
-    const sortSelect = document.getElementById("sortEntries");
+    const form = document.getElementById("journalForm");
     const entryCountElement = document.getElementById("entryCount");
     const wordCountElement = document.getElementById("wordCount");
-    
+    const journalEntriesContainer = document.getElementById("journal-entries");
+    const searchInput = document.getElementById("searchEntries");
+    const sortSelect = document.getElementById("sortEntries");
+    const photoInput = document.getElementById("entryPhotos");
+    const photoPreview = document.getElementById("photoPreview");
+
     // Load dark mode preference
     if (localStorage.getItem("darkMode") === "enabled") {
         body.classList.add("dark-mode");
@@ -27,97 +29,106 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // Journal Entries Management
-    let journalEntries = JSON.parse(localStorage.getItem("entries")) || [];
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById("entryDate").value = today;
 
-    function updateStats() {
-        entryCountElement.textContent = journalEntries.length;
-        const totalWords = journalEntries.reduce((count, entry) => {
-            return count + entry.content.split(/\s+/).filter(word => word.length > 0).length;
-        }, 0);
-        wordCountElement.textContent = totalWords;
+    // Initialize entries array
+    let entries = [];
+    
+    // Load existing entries from localStorage
+    function loadEntries() {
+        const savedEntries = localStorage.getItem("entries");
+        if (savedEntries) {
+            try {
+                entries = JSON.parse(savedEntries);
+                console.log("Loaded entries:", entries);
+            } catch (error) {
+                console.error("Error loading entries:", error);
+                entries = [];
+            }
+        }
+        updateStats();
+        displayEntries(entries);
     }
 
-    function formatDate(dateString) {
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    }
+    // Load entries on page load
+    loadEntries();
 
-    function createEntryElement(entry) {
-        const entryDiv = document.createElement("div");
-        entryDiv.classList.add("entry");
-        entryDiv.innerHTML = `
-            <div class="entry-header">
-                <h3>${entry.title}</h3>
-                <span class="entry-date">${formatDate(entry.date)}</span>
-            </div>
-            <p>${entry.content}</p>
-            <div class="entry-actions">
-                <button class="delete-entry" data-id="${entry.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
-                <button class="edit-entry" data-id="${entry.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-            </div>
-        `;
+    // Handle form submission
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
 
-        // Add event listeners for delete and edit buttons
-        entryDiv.querySelector(".delete-entry").addEventListener("click", () => deleteEntry(entry.id));
-        entryDiv.querySelector(".edit-entry").addEventListener("click", () => editEntry(entry.id));
+        // Get form values
+        const title = document.getElementById("entryTitle").value.trim();
+        const content = document.getElementById("entryContent").value.trim();
+        const date = document.getElementById("entryDate").value;
+        const mood = document.getElementById("entryMood").value;
 
-        return entryDiv;
-    }
-
-    function displayEntries(entries = journalEntries) {
-        journalContainer.innerHTML = "";
-        if (entries.length === 0) {
-            journalContainer.innerHTML = `
-                <div class="no-entries">
-                    <i class="fas fa-book-open"></i>
-                    <p>No entries yet. Start writing your first entry!</p>
-                </div>
-            `;
+        if (!title || !content || !date || !mood) {
+            showNotification("Please fill in all required fields!");
             return;
         }
-        entries.forEach(entry => {
-            journalContainer.appendChild(createEntryElement(entry));
-        });
-        updateStats();
-    }
 
-    function deleteEntry(id) {
-        if (confirm("Are you sure you want to delete this entry?")) {
-            journalEntries = journalEntries.filter(entry => entry.id !== id);
-            localStorage.setItem("entries", JSON.stringify(journalEntries));
-            displayEntries();
+        // Create new entry object
+        const newEntry = {
+            id: Date.now(),
+            title: title,
+            content: content,
+            date: date,
+            mood: mood,
+            photos: currentPhotos,
+            timestamp: new Date().toISOString()
+        };
+
+        console.log("Creating new entry:", newEntry);
+
+        // Add new entry to the beginning of the array
+        entries.unshift(newEntry);
+        
+        // Save to localStorage
+        try {
+            localStorage.setItem("entries", JSON.stringify(entries));
+            console.log("Saved entries to localStorage:", entries);
+            
+            // Update UI
+            updateStats();
+            displayEntries(entries);
+
+            // Reset form and photos
+            form.reset();
+            document.getElementById("entryDate").value = today;
+            photoPreview.innerHTML = "";
+            currentPhotos = [];
+
+            // Show success message
+            showNotification("Thought saved successfully!");
+
+            // Scroll to entries section
+            document.getElementById("entries").scrollIntoView({ behavior: "smooth" });
+        } catch (error) {
+            console.error("Error saving entry:", error);
+            showNotification("Error saving your thought. Please try again.");
         }
-    }
+    });
 
-    function editEntry(id) {
-        const entry = journalEntries.find(entry => entry.id === id);
-        if (entry) {
-            document.getElementById("entryTitle").value = entry.title;
-            document.getElementById("entryContent").value = entry.content;
-            document.getElementById("entryDate").value = entry.date;
-            document.getElementById("addEntry").textContent = "Update Entry";
-            journalForm.dataset.editId = id;
-        }
-    }
-
-    // Search functionality
+    // Handle search
     searchInput.addEventListener("input", (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const filteredEntries = journalEntries.filter(entry => 
+        const searchTerm = e.target.value.toLowerCase().trim();
+        if (searchTerm === "") {
+            displayEntries(entries);
+            return;
+        }
+        const filteredEntries = entries.filter(entry => 
             entry.title.toLowerCase().includes(searchTerm) ||
             entry.content.toLowerCase().includes(searchTerm)
         );
         displayEntries(filteredEntries);
     });
 
-    // Sort functionality
+    // Handle sort
     sortSelect.addEventListener("change", (e) => {
-        const sortedEntries = [...journalEntries].sort((a, b) => {
+        const sortedEntries = [...entries].sort((a, b) => {
             const dateA = new Date(a.date);
             const dateB = new Date(b.date);
             return e.target.value === "newest" ? dateB - dateA : dateA - dateB;
@@ -125,46 +136,216 @@ document.addEventListener("DOMContentLoaded", function() {
         displayEntries(sortedEntries);
     });
 
-    // Form submission
-    journalForm.addEventListener("submit", (e) => {
-        e.preventDefault();
+    function updateStats() {
+        // Update entry count
+        entryCountElement.textContent = entries.length;
+
+        // Calculate total words
+        const totalWords = entries.reduce((total, entry) => {
+            return total + entry.content.trim().split(/\s+/).filter(word => word.length > 0).length;
+        }, 0);
+        wordCountElement.textContent = totalWords;
+    }
+
+    function displayEntries(entriesToShow) {
+        journalEntriesContainer.innerHTML = "";
         
-        const title = document.getElementById("entryTitle").value;
-        const content = document.getElementById("entryContent").value;
-        const date = document.getElementById("entryDate").value;
-        
-        if (journalForm.dataset.editId) {
-            // Update existing entry
-            const id = journalForm.dataset.editId;
-            const index = journalEntries.findIndex(entry => entry.id === id);
-            if (index !== -1) {
-                journalEntries[index] = { id, title, content, date };
-            }
-            delete journalForm.dataset.editId;
-            document.getElementById("addEntry").innerHTML = '<i class="fas fa-plus"></i> Add Entry';
-        } else {
-            // Add new entry
-            const newEntry = {
-                id: Date.now().toString(),
-                title,
-                content,
-                date
-            };
-            journalEntries.unshift(newEntry);
+        if (!entriesToShow || entriesToShow.length === 0) {
+            journalEntriesContainer.innerHTML = `
+                <div class="no-entries">
+                    <i class="fas fa-book-open"></i>
+                    <p>Start writing your first thought!</p>
+                </div>
+            `;
+            return;
         }
 
-        localStorage.setItem("entries", JSON.stringify(journalEntries));
-        journalForm.reset();
-        displayEntries();
+        entriesToShow.forEach(entry => {
+            if (!entry || !entry.date) return;
 
-        // Show success message
-        const successMessage = document.createElement("div");
-        successMessage.classList.add("success-message");
-        successMessage.textContent = "Entry saved successfully!";
-        journalForm.appendChild(successMessage);
-        setTimeout(() => successMessage.remove(), 3000);
+            const entryCard = document.createElement("div");
+            entryCard.classList.add("entry");
+            
+            const entryDate = new Date(entry.date);
+            const formattedDate = entryDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            const moodEmoji = getMoodEmoji(entry.mood);
+            
+            let photosHtml = '';
+            if (entry.photos && entry.photos.length > 0) {
+                photosHtml = `
+                    <div class="entry-photos">
+                        ${entry.photos.map((photo, index) => `
+                            <div class="entry-photo" onclick="showPhotoModal('${photo}')">
+                                <img src="${photo}" alt="Photo ${index + 1}">
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            entryCard.innerHTML = `
+                <div class="entry-header">
+                    <div class="entry-date">${formattedDate}</div>
+                    <div class="entry-mood">${moodEmoji} ${entry.mood}</div>
+                </div>
+                <div class="entry-content">
+                    <h3 class="entry-title">${entry.title}</h3>
+                    <p>${entry.content}</p>
+                    ${photosHtml}
+                </div>
+                <div class="entry-actions">
+                    <button class="delete-entry" data-id="${entry.id}">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            `;
+            
+            // Add delete functionality
+            entryCard.querySelector(".delete-entry").addEventListener("click", () => {
+                if (confirm("Are you sure you want to delete this entry?")) {
+                    entries = entries.filter(e => e.id !== entry.id);
+                    localStorage.setItem("entries", JSON.stringify(entries));
+                    updateStats();
+                    displayEntries(entries);
+                    showNotification("Entry deleted successfully!");
+                }
+            });
+
+            journalEntriesContainer.appendChild(entryCard);
+        });
+    }
+
+    function getMoodEmoji(mood) {
+        const moodEmojis = {
+            happy: "😊",
+            excited: "🎉",
+            calm: "😌",
+            sad: "😢",
+            angry: "😠",
+            neutral: "😐"
+        };
+        return moodEmojis[mood?.toLowerCase()] || "📝";
+    }
+
+    function showNotification(message) {
+        const notification = document.createElement("div");
+        notification.classList.add("notification");
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // Add smooth scrolling for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
     });
 
-    // Initial display
-    displayEntries();
+    // Debug function to check localStorage
+    function checkLocalStorage() {
+        const entriesString = localStorage.getItem("entries");
+        console.log("Current localStorage entries:", entriesString);
+        try {
+            const parsedEntries = JSON.parse(entriesString);
+            console.log("Parsed entries:", parsedEntries);
+        } catch (error) {
+            console.error("Error parsing entries:", error);
+        }
+    }
+
+    // Check localStorage on page load
+    checkLocalStorage();
+
+    // Add a test entry button for debugging
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        const testButton = document.createElement('button');
+        testButton.textContent = 'Add Test Entry';
+        testButton.style.position = 'fixed';
+        testButton.style.bottom = '20px';
+        testButton.style.right = '20px';
+        testButton.addEventListener('click', () => {
+            const testEntry = {
+                id: Date.now(),
+                title: 'Test Entry',
+                content: 'This is a test entry',
+                date: new Date().toISOString().split('T')[0],
+                mood: 'happy'
+            };
+            entries.unshift(testEntry);
+            localStorage.setItem("entries", JSON.stringify(entries));
+            updateStats();
+            displayEntries(entries);
+            checkLocalStorage();
+        });
+        document.body.appendChild(testButton);
+    }
+
+    // Add photo preview functionality
+    photoInput.addEventListener("change", function(e) {
+        const files = Array.from(e.target.files);
+        
+        if (files.length > 5) {
+            showNotification("You can only upload up to 5 photos!");
+            return;
+        }
+
+        // Clear existing previews
+        photoPreview.innerHTML = "";
+        currentPhotos = [];
+
+        files.forEach(file => {
+            if (!file.type.startsWith('image/')) {
+                showNotification("Please upload only image files!");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewItem = document.createElement("div");
+                previewItem.classList.add("photo-preview-item");
+                
+                previewItem.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <button class="remove-photo" onclick="this.parentElement.remove();">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                photoPreview.appendChild(previewItem);
+                currentPhotos.push(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    // Add photo modal functionality
+    function showPhotoModal(photoUrl) {
+        const modal = document.createElement('div');
+        modal.classList.add('photo-modal');
+        modal.innerHTML = `
+            <span class="modal-close" onclick="this.parentElement.remove();">&times;</span>
+            <img src="${photoUrl}" alt="Full size photo">
+        `;
+        document.body.appendChild(modal);
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
 });

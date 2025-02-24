@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A modern journal for capturing your thoughts and memories">
-    <title>My Journal - Capture Your Thoughts</title>
+    <meta name="description" content="A peaceful space for your daily thoughts and reflections">
+    <title>Daily Thoughts - Your Personal Journal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script defer src="script.js"></script>
@@ -12,6 +12,20 @@
 <body>
     <!-- Navigation -->
     <nav class="nav-container">
+        <div class="nav-content">
+            <a href="index.html" class="nav-logo">
+                <i class="fas fa-book-heart"></i>
+                Daily Thoughts
+            </a>
+            <div class="nav-links">
+                <a href="#write" class="nav-link">
+                    <i class="fas fa-pen"></i> Write
+                </a>
+                <a href="#entries" class="nav-link">
+                    <i class="fas fa-book"></i> My Thoughts
+                </a>
+            </div>
+        </div>
         <div class="theme-toggle">
             <button id="darkModeToggle" aria-label="Toggle dark mode">🌙</button>
         </div>
@@ -19,12 +33,12 @@
 
     <!-- Hero Section -->
     <header class="hero">
-        <h1>My Journal</h1>
-        <p>"Capture your thoughts, memories, and inspirations in one beautiful place."</p>
+        <h1>Daily Thoughts</h1>
+        <p>"A peaceful space to capture your daily reflections and memories"</p>
         <div class="hero-stats">
             <div class="stat">
                 <span id="entryCount">0</span>
-                <label>Entries</label>
+                <label>Thoughts</label>
             </div>
             <div class="stat">
                 <span id="wordCount">0</span>
@@ -36,47 +50,74 @@
     <!-- Main Content -->
     <main>
         <!-- Entry Form -->
-        <section class="entry-form">
-            <h3>Create New Entry</h3>
+        <section id="write" class="entry-form">
             <form id="journalForm">
-                <div class="form-group">
-                    <input type="text" id="entryTitle" placeholder="Give your entry a title..." required>
+                <div class="form-header">
+                    <h2>Write Today's Thoughts</h2>
                 </div>
                 <div class="form-group">
-                    <textarea id="entryContent" placeholder="Write your thoughts..." required></textarea>
+                    <label for="entryDate">Date</label>
+                    <input type="date" id="entryDate" name="entryDate" required>
                 </div>
                 <div class="form-group">
-                    <input type="date" id="entryDate" required>
+                    <label for="entryTitle">Title</label>
+                    <input type="text" id="entryTitle" name="entryTitle" placeholder="Give your thought a title..." required>
                 </div>
-                <div class="form-actions">
-                    <button type="submit" id="addEntry">
-                        <i class="fas fa-plus"></i> Add Entry
-                    </button>
+                <div class="form-group">
+                    <label for="entryMood">How do you feel?</label>
+                    <select id="entryMood" name="entryMood" required>
+                        <option value="">Select your mood...</option>
+                        <option value="happy">Happy 😊</option>
+                        <option value="excited">Excited 🎉</option>
+                        <option value="calm">Peaceful 😌</option>
+                        <option value="sad">Sad 😢</option>
+                        <option value="angry">Angry 😠</option>
+                        <option value="neutral">Neutral 😐</option>
+                    </select>
                 </div>
+                <div class="form-group">
+                    <label for="entryContent">Your Thoughts</label>
+                    <textarea id="entryContent" name="entryContent" rows="6" 
+                        placeholder="Share your thoughts, feelings, and reflections..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="entryPhotos">Add Photos (Optional)</label>
+                    <div class="photo-upload-container">
+                        <input type="file" id="entryPhotos" name="entryPhotos" accept="image/*" multiple 
+                            class="photo-input">
+                        <div class="photo-preview" id="photoPreview">
+                            <!-- Preview images will be added here -->
+                        </div>
+                    </div>
+                    <p class="photo-hint">You can upload up to 5 photos. Click or drag photos here.</p>
+                </div>
+                <button type="submit" class="submit-button">
+                    <i class="fas fa-feather"></i> Save Reflection
+                </button>
             </form>
         </section>
 
-        <!-- Journal Section -->
-        <section class="journal-container">
+        <!-- All Entries -->
+        <section id="entries" class="all-entries">
             <div class="section-header">
-                <h2>Your Entries</h2>
+                <h2>My Thoughts</h2>
                 <div class="entry-filters">
                     <select id="sortEntries">
                         <option value="newest">Newest First</option>
                         <option value="oldest">Oldest First</option>
                     </select>
-                    <input type="text" id="searchEntries" placeholder="Search entries...">
+                    <input type="text" id="searchEntries" placeholder="Search your thoughts...">
                 </div>
             </div>
             <div id="journal-entries">
-                <!-- JavaScript will dynamically add entries here -->
+                <!-- Entries will be dynamically added here -->
             </div>
         </section>
     </main>
 
     <footer>
         <div class="footer-content">
-            <p>&copy; 2024 My Journal | Built with <i class="fas fa-heart"></i></p>
+            <p>&copy; 2024 Daily Thoughts | Built with <i class="fas fa-heart"></i></p>
             <div class="social-links">
                 <a href="#" aria-label="Share on Twitter"><i class="fab fa-twitter"></i></a>
                 <a href="#" aria-label="Share on Facebook"><i class="fab fa-facebook"></i></a>
@@ -85,5 +126,138 @@
         </div>
     </footer>
 
+    <style>
+    .photo-upload-container {
+        border: 2px dashed var(--border-color);
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 10px;
+        position: relative;
+        background: var(--background-light);
+        transition: all 0.3s ease;
+    }
+
+    .photo-upload-container:hover {
+        border-color: var(--primary-color);
+        background: var(--card-light);
+    }
+
+    .photo-input {
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .photo-preview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .photo-preview-item {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .photo-preview-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .remove-photo {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .photo-hint {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-top: 5px;
+        text-align: center;
+    }
+
+    .entry-photos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .entry-photo {
+        width: 150px;
+        height: 150px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .entry-photo:hover {
+        transform: scale(1.05);
+    }
+
+    .entry-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Photo Modal */
+    .photo-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .photo-modal img {
+        max-width: 90%;
+        max-height: 90vh;
+        object-fit: contain;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: white;
+        font-size: 30px;
+        cursor: pointer;
+    }
+
+    .dark-mode .photo-upload-container {
+        background: var(--background-dark);
+    }
+
+    .dark-mode .photo-hint {
+        color: var(--text-dark);
+    }
+    </style>
 </body>
 </html>

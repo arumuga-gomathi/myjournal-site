@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Browse through your collection of thoughts and reflections">
+    <title>My Journal - Daily Thoughts</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="archive.css">
+    <script defer src="archive.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-container">
+        <div class="nav-content">
+            <a href="index.html" class="nav-logo">
+                <i class="fas fa-book-heart"></i>
+                Daily Thoughts
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-pen"></i> Write
+                </a>
+                <a href="archive.html" class="nav-link active">
+                    <i class="fas fa-book"></i> My Journal
+                </a>
+            </div>
+        </div>
+        <div class="theme-toggle">
+            <button id="darkModeToggle" aria-label="Toggle dark mode">🌙</button>
+        </div>
+    </nav>
+
+    <!-- Archive Header -->
+    <header class="archive-hero">
+        <h1>My Journal</h1>
+        <p>A collection of your thoughts and reflections through time</p>
+    </header>
+
+    <!-- Archive Content -->
+    <main class="archive-container">
+        <!-- Timeline Navigation -->
+        <aside class="timeline-sidebar">
+            <div class="year-list" id="yearList">
+                <!-- Years will be dynamically added here -->
+            </div>
+        </aside>
+
+        <!-- Month Grid and Entries Display -->
+        <div class="content-area">
+            <div class="month-grid" id="monthGrid">
+                <!-- Months will be shown here when a year is selected -->
+            </div>
+
+            <div class="notebook-view">
+                <!-- Entries will be displayed here -->
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2024 Daily Thoughts | Built with <i class="fas fa-heart"></i></p>
+            <div class="social-links">
+                <a href="#" aria-label="Share on Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Share on Facebook"><i class="fab fa-facebook"></i></a>
+                <a href="#" aria-label="Share on Instagram"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 
