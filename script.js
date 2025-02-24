@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 photosHtml = `
                     <div class="entry-photos">
                         ${entry.photos.map((photo, index) => `
-                            <div class="entry-photo" onclick="showPhotoModal('${photo}')">
+                            <div class="entry-photo">
                                 <img src="${photo}" alt="Photo ${index + 1}">
                             </div>
                         `).join('')}
@@ -190,24 +190,77 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             
             entryCard.innerHTML = `
-                <div class="entry-header">
-                    <div class="entry-date">${formattedDate}</div>
-                    <div class="entry-mood">${moodEmoji} ${entry.mood}</div>
+                <div class="entry-header" role="button" tabindex="0">
+                    <div class="entry-summary">
+                        <div class="entry-date">${formattedDate}</div>
+                        <div class="entry-mood">${moodEmoji} ${entry.mood}</div>
+                        <h3 class="entry-title">${entry.title}</h3>
+                    </div>
+                    <div class="entry-toggle">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
                 </div>
-                <div class="entry-content">
-                    <h3 class="entry-title">${entry.title}</h3>
+                <div class="entry-content" style="display: none;">
                     <p>${entry.content}</p>
                     ${photosHtml}
-                </div>
-                <div class="entry-actions">
-                    <button class="delete-entry" data-id="${entry.id}">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
+                    <div class="entry-actions">
+                        <button class="delete-entry" data-id="${entry.id}">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
                 </div>
             `;
             
+            // Add toggle functionality
+            const header = entryCard.querySelector('.entry-header');
+            const content = entryCard.querySelector('.entry-content');
+            const toggle = entryCard.querySelector('.entry-toggle i');
+            
+            header.addEventListener('click', () => {
+                const isHidden = content.style.display === 'none';
+                content.style.display = isHidden ? 'block' : 'none';
+                toggle.className = isHidden ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+                if (isHidden) {
+                    entryCard.classList.add('expanded');
+                } else {
+                    entryCard.classList.remove('expanded');
+                }
+            });
+
+            // Add keyboard accessibility
+            header.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    header.click();
+                }
+            });
+
+            // Add photo click functionality
+            const photos = entryCard.querySelectorAll('.entry-photo');
+            photos.forEach(photo => {
+                photo.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent entry toggle when clicking photo
+                    const imgSrc = photo.querySelector('img').src;
+                    const modal = document.createElement('div');
+                    modal.classList.add('photo-modal');
+                    modal.innerHTML = `
+                        <span class="modal-close">&times;</span>
+                        <img src="${imgSrc}" alt="Full size photo">
+                    `;
+                    document.body.appendChild(modal);
+
+                    // Add close functionality
+                    const closeBtn = modal.querySelector('.modal-close');
+                    closeBtn.addEventListener('click', () => modal.remove());
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) modal.remove();
+                    });
+                });
+            });
+            
             // Add delete functionality
-            entryCard.querySelector(".delete-entry").addEventListener("click", () => {
+            entryCard.querySelector(".delete-entry").addEventListener("click", (e) => {
+                e.stopPropagation(); // Prevent entry toggle when clicking delete
                 if (confirm("Are you sure you want to delete this entry?")) {
                     entries = entries.filter(e => e.id !== entry.id);
                     localStorage.setItem("entries", JSON.stringify(entries));
@@ -331,21 +384,4 @@ document.addEventListener("DOMContentLoaded", function() {
             reader.readAsDataURL(file);
         });
     });
-
-    // Add photo modal functionality
-    function showPhotoModal(photoUrl) {
-        const modal = document.createElement('div');
-        modal.classList.add('photo-modal');
-        modal.innerHTML = `
-            <span class="modal-close" onclick="this.parentElement.remove();">&times;</span>
-            <img src="${photoUrl}" alt="Full size photo">
-        `;
-        document.body.appendChild(modal);
-
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
-    }
 });
